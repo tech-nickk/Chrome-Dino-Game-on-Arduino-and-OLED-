@@ -10,15 +10,25 @@
  * Display: OLED SSD1309 SPI 128x64  *OR*  SH1106/SSD1306 I2C 128x64 (130x64) (132x64)
 */ 
 
+#include <Adafruit_SSD1306.h>
+#include <Wire.h>
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+#define OLED_RESET     -1
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
 /* Hardware Connections */
 // -- Buttons --
 #define JUMP_BUTTON 6
 #define DUCK_BUTTON 5
 
 // -- Display Selection (uncomment ONE of the options) -- 
-#define LCD_SSD1309
+// #define LCD_SSD1309
 //#define LCD_SH1106      //If you see abnormal vertical line at the left edge of the display, select LCD_SSD1306
-//#define LCD_SSD1306     //If you see abnormal vertical line at the right edge of the display, select LCD_SH1106
+#define LCD_SSD1306     //If you see abnormal vertical line at the right edge of the display, select LCD_SH1106
 
 // -- Display Connection for SSD1309 --
 #define LCD_SSD1309_CS 2
@@ -260,6 +270,7 @@ void gameLoop(uint16_t &hiScore) {
     Serial.println(dt);
 #endif
 
+
     //throttle
     while(millis() - prvT < frameTime);
     prvT = millis();
@@ -280,6 +291,13 @@ void setup() {
   pinMode(JUMP_BUTTON, INPUT_PULLUP);
   pinMode(DUCK_BUTTON, INPUT_PULLUP);
   Serial.begin(250000);
+
+// SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
   lcd.begin();
   spalshScreen();
   lcd.setAddressingMode(LCD_IF_VIRTUAL_WIDTH(lcd.VerticalAddressingMode, lcd.HorizontalAddressingMode));
